@@ -105,37 +105,36 @@ std::vector<boost::multiprecision::uint256_t> prime_product_divisors_multithread
     memory_request_dynamic_assert<boost::multiprecision::uint256_t>(pow_int(size_t(1),nth));
     if (nth < 3) return prime_product_divisors(nth);
     const auto primes = prime_array(nth);
-    unsigned cores = std::thread::hardware_concurrency();
-    if (cores == 0) cores = 4;
 
     std::vector<boost::multiprecision::uint256_t> result;
+    std::uint64_t mask = (1ull << nth);
+    std::uint64_t unitmask = (mask >> 2);
 
-    auto func_thread = [&primes, nth]
-    (const std::uint64_t mask, const unsigned& core_num, const unsigned& thr_id, std::vector<boost::multiprecision::uint256_t>& thr_result){
-        for (std::uint64_t i = thr_id; i < mask; i+=core_num) {
+
+    auto func_thread = [&primes, nth, mask, unitmask]
+    (const unsigned& thr_id, std::vector<boost::multiprecision::uint256_t>& table){
+        std::uint64_t start = thr_id* unitmask, end = (thr_id+1)*unitmask;
+        for (std::uint64_t i = start; i < end; ++i) {
             std::uint64_t temp = i;
             boost::multiprecision::uint256_t result = 1;
             for (std::uint_fast8_t j = 0; j < nth; ++j) {
                 if (temp & 1) result *= primes[j + 1];
                 temp >>= 1;
             }
-            thr_result.push_back(result);
+            table[i] = result;
         }
     };
+    std::vector<boost::multiprecision::uint256_t> table(mask,0);
 
-    std::uint64_t mask = (1ull << nth);
-    std::vector<std::thread> thrs;
-    std::vector<std::vector<boost::multiprecision::uint256_t>> results(cores);
-    for (unsigned i = 0; i < cores; ++i){
-        results[i].reserve(mask/cores+1);
-        thrs.emplace_back(func_thread,mask, cores, i,std::ref(results[i]));
-    }
-    for (unsigned i = 0; i < cores; ++i)
-        thrs[i].join();
-    for (unsigned i = 0; i < cores; ++i){
-        result.insert(result.end(),results[i].begin(), results[i].end());
-    }
+    std::thread th0(func_thread,0,std::ref(table));
+    std::thread th1(func_thread,0,std::ref(table));
+    std::thread th2(func_thread,0,std::ref(table));
+    std::thread th3(func_thread,0,std::ref(table));
+    th0.join();
+    th1.join();
+    th2.join();
+    th3.join();
 
-    std::sort(result.begin(), result.end());
-    return result;
+    std::sort(table.begin(), table.end());
+    return table;
 }
