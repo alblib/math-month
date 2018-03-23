@@ -13,95 +13,78 @@
 
 #include "utility.h"
 #include "timing.h"
+#include <boost/progress.hpp>
 
 using namespace std;
 using namespace boost::multiprecision;
 
 mutex print_mutex;
 
-array<uint256_t, 34> primes = {1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, \
-67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137};
+size_t done_thr = 0;
+
 uint256_t thr = uint256_t(5521159517ull)*uint256_t(1000000000000ull) + uint256_t(777159511255ull);
 
-
+auto primes = prime_array(34);
 
 
 timing_measurement<> main_timing = timing_measurement<>();
 
-vector<uint256_t> functor24(){
-    vector<uint256_t> factor24;
-    for(uint32_t i = 0; i < (1ul << 24); ++i){
-        uint32_t temp = i;
-        uint256_t result=primes[33];
-        for (char j=0;j<24;++j){
-            if (temp&1) result*=primes[j+1];
-            temp>>=1;
-        }
-        factor24.push_back(result);
-    }
-    std::sort(factor24.begin(),factor24.end());
-    return factor24;
-}
 
-vector<uint256_t> factor24=functor24();
+vector<uint256_t> factor24=prime_product_divisors_multithread(24);
 
-std::vector<uint256_t> block(uint16_t index, const vector<uint256_t>& factor24){
+uint256_t block(uint64_t index, const vector<uint256_t>& factor24, const uint256_t max_hint){
     auto id = index;
-    print_mutex.lock();
-     cout << "thread " << id << " ["
-     << std::chrono::duration<double>(main_timing.real_time()).count()
-     << "s] loaded"<<endl;
-     print_mutex.unlock();
-    uint256_t index_factor = 1;
-    for(int i = 0; i < 8; ++i){
+
+    uint256_t index_factor = primes[34];
+    for(int i = 0; i < 9; ++i){
         index_factor *= ((index & 1) ? primes[25+i]: 1);
         index >>= 1;
     }
-    uint256_t comp_thr = ::thr/index_factor;
+    uint256_t max = max_hint;
+    uint256_t temp;
     auto it = factor24.begin();
     while (it != factor24.end()){
-        if (*it > comp_thr) break;
+        temp = *it * index_factor;
+        if (temp > max && is_palindrome(temp))
+            max=temp;
         ++it;
     }
-    std::vector<uint256_t> result;
-    while (it != factor24.end()){
-        uint256_t num = ((*it) * index_factor);
-        if (is_palindrome(num)) 
-            result.push_back(num);
-        ++it;
-    }
-    print_mutex.lock();
-    cout << "thread " << id << " ["
-     << std::chrono::duration<double>(main_timing.real_time()).count()
-     << "s] ended"<<endl;
-     print_mutex.unlock();
-    return result;
+
+    return max;
 }
 
-void block_thread(uint16_t index, const std::vector<uint256_t>& factor24, 
+void block_thread(uint64_t index, const std::vector<uint256_t>& factor24, 
     std::vector<uint256_t>& result, std::mutex& result_mutex){
-    for(size_t i = 0; i < 8; ++i){
-        auto result_temp = block((index<<3)+i, factor24);
-        result_mutex.lock();
-        result.insert(result.end(), result_temp.begin(), result_temp.end());
-        result_mutex.unlock();
+        
+
+    uint256_t max = ::thr;
+    for(size_t i = 0; i < 32; ++i){
+        max = std::max(block((i<<4)+index, factor24, max),max);
+        if (max > ::thr){
+            result_mutex.lock();
+            result.insert(result.end(), max);
+            result_mutex.unlock();
+        }
     }
 }
 
 
 
 int main(){
-    cout << std::chrono::duration<double>(main_timing.real_time()).count() << "s: factor 22 ready." << endl;
-    
+    cout << std::chrono::duration<double>(main_timing.real_time()).count() << "s: factor 24 ready." << endl;
+    print_mutex.lock();
+    cout << "a\rb";
+    boost::progress_display dis(512);
+print_mutex.unlock();
     std::vector<uint256_t> result;
     
     std::mutex result_mutex;
     std::vector<thread> threads;
     
-    for (size_t i = 0; i < 32; ++i)
+    for (size_t i = 0; i < 16; ++i)
         threads.emplace_back(block_thread,i,std::ref(factor24),std::ref(result),std::ref(result_mutex));
     
-    for (size_t i = 0; i <32; ++i)
+    for (size_t i = 0; i <16; ++i)
         threads[i].join();
     /*
     for (size_t i = 0; i < 128; ++i){

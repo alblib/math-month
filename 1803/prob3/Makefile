@@ -1,6 +1,6 @@
 CC = g++ 
 CFLAGS=-std=c++11 -O3 -pthread
-SRCS = temp.cpp utility.cpp
+SRCS = main.cpp utility.cpp progress.cpp interpret.cpp
 OBJS = $(SRCS:.cpp=.o)
 TARGET = MyClient
 HEADERS = timing.h utility.h
