@@ -1,16 +1,17 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <vector>
 #include <valarray>
-#include <cinttypes>
 #include <stdexcept>
 #include <type_traits>
+#include <cstdint>
 
 //using namespace boost::multiprecision;
 
 bool is_palindrome(const boost::multiprecision::uint256_t& value);
 std::vector<boost::multiprecision::uint256_t> prime_array(size_t nth);
 std::vector<boost::multiprecision::uint256_t> prime_product_array(size_t nth);
-std::vector<boost::multiprecision::uint256_t> prime_product_divisors(std::uint8_t nth);
+std::vector<boost::multiprecision::uint256_t> prime_product_divisors(std::uint_fast8_t nth);
+std::vector<boost::multiprecision::uint256_t> prime_product_divisors_multithread(std::uint_fast8_t nth);
 
 
 template<class T>

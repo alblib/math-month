@@ -2,6 +2,8 @@
 
 #include <sstream>
 #include <string>
+#include <thread>
+#include <mutex>
 
 bool is_palindrome(const boost::multiprecision::uint256_t& value){
     std::stringstream ss;
@@ -81,7 +83,7 @@ std::vector<boost::multiprecision::uint256_t> prime_product_array(size_t nth){
         result[i] = result[i - 1] * primes[i];
     return result;
 }
-std::vector<boost::multiprecision::uint256_t> prime_product_divisors(std::uint8_t nth){
+std::vector<boost::multiprecision::uint256_t> prime_product_divisors(std::uint_fast8_t nth){
     memory_request_dynamic_assert<boost::multiprecision::uint256_t>(pow_int(size_t(1),nth));
     auto primes = prime_array(nth);
     std::vector<boost::multiprecision::uint256_t> divisors;
@@ -89,7 +91,7 @@ std::vector<boost::multiprecision::uint256_t> prime_product_divisors(std::uint8_
     for (std::uint64_t i = 0; i < mask; ++i) {
         std::uint64_t temp = i;
         boost::multiprecision::uint256_t result = 1;
-        for (std::uint8_t j = 0; j < nth; ++j) {
+        for (std::uint_fast8_t j = 0; j < nth; ++j) {
             if (temp & 1) result *= primes[j + 1];
             temp >>= 1;
         }
@@ -99,4 +101,41 @@ std::vector<boost::multiprecision::uint256_t> prime_product_divisors(std::uint8_
     return divisors;
 }
 
+std::vector<boost::multiprecision::uint256_t> prime_product_divisors_multithread(std::uint_fast8_t nth){
+    memory_request_dynamic_assert<boost::multiprecision::uint256_t>(pow_int(size_t(1),nth));
+    if (nth < 3) return prime_product_divisors(nth);
+    const auto primes = prime_array(nth);
+    unsigned cores = std::thread::hardware_concurrency();
+    if (cores == 0) cores = 4;
 
+    std::vector<boost::multiprecision::uint256_t> result;
+
+    auto func_thread = [&primes, nth]
+    (const std::uint64_t mask, const unsigned& core_num, const unsigned& thr_id, std::vector<boost::multiprecision::uint256_t>& thr_result){
+        for (std::uint64_t i = thr_id; i < mask; i+=core_num) {
+            std::uint64_t temp = i;
+            boost::multiprecision::uint256_t result = 1;
+            for (std::uint_fast8_t j = 0; j < nth; ++j) {
+                if (temp & 1) result *= primes[j + 1];
+                temp >>= 1;
+            }
+            thr_result.push_back(result);
+        }
+    };
+
+    std::uint64_t mask = (1ull << nth);
+    std::vector<std::thread> thrs;
+    std::vector<std::vector<boost::multiprecision::uint256_t>> results(cores);
+    for (unsigned i = 0; i < cores; ++i){
+        results[i].reserve(mask/cores+1);
+        thrs.emplace_back(func_thread,mask, cores, i,std::ref(results[i]));
+    }
+    for (unsigned i = 0; i < cores; ++i)
+        thrs[i].join();
+    for (unsigned i = 0; i < cores; ++i){
+        result.insert(result.end(),results[i].begin(), results[i].end());
+    }
+
+    std::sort(result.begin(), result.end());
+    return result;
+}

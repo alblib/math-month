@@ -1,5 +1,5 @@
 CC = g++ 
-CFLAGS=-std=c++11 -O3
+CFLAGS=-std=c++11 -O3 -pthread
 SRCS = temp.cpp utility.cpp
 OBJS = $(SRCS:.cpp=.o)
 TARGET = MyClient
