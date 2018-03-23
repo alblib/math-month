@@ -1,15 +1,61 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <vector>
 #include <valarray>
+#include <cinttypes>
+#include <stdexcept>
+#include <type_traits>
 
 //using namespace boost::multiprecision;
 
-bool is_palindrome(const boost::multiprecision::int256_t& value);
+bool is_palindrome(const boost::multiprecision::uint256_t& value);
+std::vector<boost::multiprecision::uint256_t> prime_array(size_t nth);
+std::vector<boost::multiprecision::uint256_t> prime_product_array(size_t nth);
+std::vector<boost::multiprecision::uint256_t> prime_product_divisors(std::uint8_t nth);
 
 
+template<class T>
+inline constexpr T pow_int(const T base, unsigned const exponent)
+{
+    // (parentheses not required in next line)
+    return (exponent == 0)     ? 1 :
+    (exponent % 2 == 0) ? pow_int(base, exponent/2)*pow_int(base, exponent/2) :
+    base * pow_int(base, (exponent-1)/2) * pow_int(base, (exponent-1)/2);
+}
 
-template <typename Integer>
-std::vector<Integer> prime_array(Integer nth) {
+template <class Class, size_t Size>
+struct memory_request{
+    static void dynamic_assert(){
+        unsigned long long phypz = sysconf(_SC_PHYS_PAGES);
+        unsigned long long psize = sysconf(_SC_PAGE_SIZE);
+        if ((phypz * psize - 2147483648ull) < sizeof(Class)*Size)
+            throw std::overflow_error("memory overflow.");
+        else if ((phypz * psize - 4294967296ull) < sizeof(Class)*Size){
+            std::clog<< sizeof(Class)*Size/1048576<<"MB / " << phypz * psize/1048576 << "MB" << std::endl;
+        }
+    }
+};
+
+template < typename T, T base, size_t exponent >
+struct pow_traits;
+template < typename T, T base, size_t exponent >
+struct pow_traits: std::integral_constant < T, pow_traits<T,base,exponent-1>::value >{};
+template < typename T, T base >
+struct pow_traits<T,base,0>:std::integral_constant < T, 1 >{};
+
+template <class Class>
+void memory_request_dynamic_assert(size_t Size){
+    unsigned long long phypz = sysconf(_SC_PHYS_PAGES);
+    unsigned long long psize = sysconf(_SC_PAGE_SIZE);
+    if ((phypz * psize - 2147483648ull) < sizeof(Class)*Size)
+        throw std::overflow_error("memory overflow.");
+    else if ((phypz * psize - 4294967296ull) < sizeof(Class)*Size){
+        std::clog<< sizeof(Class)*Size/1048576<<"MB / " << phypz * psize/1048576 << "MB" << std::endl;
+    }
+}
+
+/*
+template <typename Integer = boost::multiprecision::int256_t>
+std::vector<Integer> prime_array(size_t nth) {
 	std::vector<Integer> result{ 1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, \
 		61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, \
 		137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, \
@@ -42,7 +88,7 @@ std::vector<Integer> prime_array(Integer nth) {
 	std::valarray<int> sieveval{ 1, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 49, 53, 59 };
 	std::valarray<bool> sieve(false, 16);
 	sieveval += 1980;
-	for (unsigned long max_val = 4000;; max_val += 2000) {
+    for (unsigned long max_val = 4000; max_val < std::numeric_limits<Integer>::max()-2000; max_val += 2000) {
 		size_t max_prime_range = std::sqrt(max_val)*(1-3e-16);
 		while (sieveval[15] < max_val) {
 			sieve = true;
@@ -71,11 +117,11 @@ Integer prime(Integer nth) {
 	return prime_array(nth).back();
 }
 
-template <typename Integer>
-std::vector<Integer> prime_product_array(Integer nth) {
-	auto primes = prime_array(nth);
+template <typename Integer = boost::multiprecision::uint256_t>
+std::vector<Integer> prime_product_array(size_t nth) {
+	auto primes = prime_array<Integer>(nth);
 	std::vector<Integer> result(nth + 1);
-	nth[0] = 1;
+	result[0] = 1;
 	for (size_t i = 1; i <= nth; ++i) 
 		result[i] = result[i - 1] * primes[i];
 	return result;
@@ -83,12 +129,12 @@ std::vector<Integer> prime_product_array(Integer nth) {
 
 template <typename Integer, typename MaskType=Integer>
 std::vector<Integer> prime_product_divisors(MaskType nth) {
-	auto primes = prime_array(nth);
+	auto primes = prime_array<Integer>(nth);
 	std::vector<Integer> divisors;
 	for (MaskType i = 0; i < (1ull << nth); ++i) {
 		Integer temp = i;
 		Integer result = 1;
-		for (char j = 0; j < nth; ++j) {
+		for (MaskType j = 0; j < nth; ++j) {
 			if (temp & 1) result *= primes[j + 1];
 			temp >>= 1;
 		}
@@ -96,4 +142,4 @@ std::vector<Integer> prime_product_divisors(MaskType nth) {
 	}
 	std::sort(divisors.begin(), divisors.end());
 	return divisors;
-}
+}*/

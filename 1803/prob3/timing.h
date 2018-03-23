@@ -67,7 +67,8 @@ public:
     }
 	std::string real_time_print() const noexcept {
 		std::stringstream ss;
-		ss << boost::format("%1$0.4f") % std::chrono::duration<double>(real_time()).count();
+		ss << "["
+        << boost::format("%1$0.4f") % std::chrono::duration<double>(real_time()).count() << " s]";
 		return ss.str();
 	}
 };
