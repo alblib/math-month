@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		6264373A2064642D001553C5 /* temp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 626437392064642C001553C5 /* temp.cpp */; };
 		6264373E2064643F001553C5 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6264373D2064643F001553C5 /* utility.cpp */; };
+		62F5EED92065A40F00C6D665 /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 62F5EED42065A40E00C6D665 /* Makefile */; };
+		62F5EEDA2065A40F00C6D665 /* progress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62F5EED62065A40E00C6D665 /* progress.cpp */; };
+		62F5EEDB2065A40F00C6D665 /* interpret.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62F5EED82065A40F00C6D665 /* interpret.cpp */; };
+		62F5EEE22065DDC500C6D665 /* function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62F5EEE02065DDC500C6D665 /* function.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,6 +33,14 @@
 		6264373B2064643F001553C5 /* utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = utility.h; path = ../prob3/utility.h; sourceTree = "<group>"; };
 		6264373C2064643F001553C5 /* timing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = timing.h; path = ../prob3/timing.h; sourceTree = "<group>"; };
 		6264373D2064643F001553C5 /* utility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = utility.cpp; path = ../prob3/utility.cpp; sourceTree = "<group>"; };
+		62F5EED42065A40E00C6D665 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../prob3/Makefile; sourceTree = "<group>"; };
+		62F5EED52065A40E00C6D665 /* progress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = progress.h; path = ../prob3/progress.h; sourceTree = "<group>"; };
+		62F5EED62065A40E00C6D665 /* progress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = progress.cpp; path = ../prob3/progress.cpp; sourceTree = "<group>"; };
+		62F5EED72065A40E00C6D665 /* interpret.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = interpret.h; path = ../prob3/interpret.h; sourceTree = "<group>"; };
+		62F5EED82065A40F00C6D665 /* interpret.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = interpret.cpp; path = ../prob3/interpret.cpp; sourceTree = "<group>"; };
+		62F5EEE02065DDC500C6D665 /* function.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = function.cpp; path = ../prob3/function.cpp; sourceTree = "<group>"; };
+		62F5EEE12065DDC500C6D665 /* function.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = function.hpp; path = ../prob3/function.hpp; sourceTree = "<group>"; };
+		62F5EEE32065ED0C00C6D665 /* atomic_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = atomic_types.h; path = ../prob3/atomic_types.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,10 +59,18 @@
 			children = (
 				62643731206463F8001553C5 /* mmth1803 */,
 				62643730206463F8001553C5 /* Products */,
+				62F5EEE32065ED0C00C6D665 /* atomic_types.h */,
+				62F5EEE02065DDC500C6D665 /* function.cpp */,
+				62F5EEE12065DDC500C6D665 /* function.hpp */,
 				626437392064642C001553C5 /* temp.cpp */,
 				6264373C2064643F001553C5 /* timing.h */,
 				6264373D2064643F001553C5 /* utility.cpp */,
 				6264373B2064643F001553C5 /* utility.h */,
+				62F5EED82065A40F00C6D665 /* interpret.cpp */,
+				62F5EED72065A40E00C6D665 /* interpret.h */,
+				62F5EED42065A40E00C6D665 /* Makefile */,
+				62F5EED62065A40E00C6D665 /* progress.cpp */,
+				62F5EED52065A40E00C6D665 /* progress.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -126,7 +146,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				62F5EEDB2065A40F00C6D665 /* interpret.cpp in Sources */,
+				62F5EED92065A40F00C6D665 /* Makefile in Sources */,
 				6264373E2064643F001553C5 /* utility.cpp in Sources */,
+				62F5EEE22065DDC500C6D665 /* function.cpp in Sources */,
+				62F5EEDA2065A40F00C6D665 /* progress.cpp in Sources */,
 				6264373A2064642D001553C5 /* temp.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -243,6 +267,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PTWZUAAFT5;
 				HEADER_SEARCH_PATHS = /usr/local/include/;
+				OTHER_LDFLAGS = "-pthread";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -253,6 +278,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PTWZUAAFT5;
 				HEADER_SEARCH_PATHS = /usr/local/include/;
+				OTHER_LDFLAGS = "-pthread";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

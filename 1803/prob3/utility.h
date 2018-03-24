@@ -12,6 +12,7 @@ std::vector<boost::multiprecision::uint256_t> prime_array(size_t nth);
 std::vector<boost::multiprecision::uint256_t> prime_product_array(size_t nth);
 std::vector<boost::multiprecision::uint256_t> prime_product_divisors(std::uint_fast8_t nth);
 std::vector<boost::multiprecision::uint256_t> prime_product_divisors_multithread(std::uint_fast8_t nth);
+std::vector<boost::multiprecision::uint256_t> prime_product_divisors_progressbar(std::uint_fast8_t nth);
 
 
 template<class T>

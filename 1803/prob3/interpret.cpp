@@ -40,11 +40,11 @@ std::vector<int> live_interpret(int argc, char ** argv)
 		result = interpret(buffer);
 	}
 	std::sort(result.begin(), result.end());
-	std::cout << std::endl << "Input n's : ";
+	std::cout << std::endl << "[Input n's : ";
 	for (size_t i = 0; i < result.size(); ++i) {
 		std::cout << result[i];
 		if (i != result.size() - 1) std::cout << ", ";
 	}
-	std::cout << std::endl;
+	std::cout << "]" << std::endl;
 	return result;
 }

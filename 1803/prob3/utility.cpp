@@ -4,6 +4,7 @@
 #include <string>
 #include <thread>
 #include <mutex>
+#include "progress.h"
 
 bool is_palindrome(const boost::multiprecision::uint256_t& value){
     std::stringstream ss;
@@ -135,6 +136,48 @@ std::vector<boost::multiprecision::uint256_t> prime_product_divisors_multithread
     th2.join();
     th3.join();
 
+    std::sort(table.begin(), table.end());
+    return table;
+}
+
+std::vector<boost::multiprecision::uint256_t> prime_product_divisors_progressbar(std::uint_fast8_t nth){
+    memory_request_dynamic_assert<boost::multiprecision::uint256_t>(pow_int(size_t(1),nth));
+    if (nth < 3) return prime_product_divisors(nth);
+    const auto primes = prime_array(nth);
+    
+    std::vector<boost::multiprecision::uint256_t> result;
+    std::uint64_t mask = (1ull << nth);
+    std::uint64_t unitmask = (mask >> 2);
+    size_t promask = unitmask >>5;
+    if (promask == 0) promask = 1;
+    
+    progress_bar bar(mask/promask);
+    
+    auto func_thread = [&primes, nth, mask, unitmask,&bar,promask]
+    (const unsigned& thr_id, std::vector<boost::multiprecision::uint256_t>& table){
+        std::uint64_t start = thr_id* unitmask, end = (thr_id+1)*unitmask;
+        for (std::uint64_t i = start; i < end; ++i) {
+            std::uint64_t temp = i;
+            boost::multiprecision::uint256_t result = 1;
+            for (std::uint_fast8_t j = 0; j < nth; ++j) {
+                if (temp & 1) result *= primes[j + 1];
+                temp >>= 1;
+            }
+            table[i] = result;
+            if (i % promask == 0) ++bar;
+        }
+    };
+    std::vector<boost::multiprecision::uint256_t> table(mask,0);
+    
+    std::thread th0(func_thread,0,std::ref(table));
+    std::thread th1(func_thread,0,std::ref(table));
+    std::thread th2(func_thread,0,std::ref(table));
+    std::thread th3(func_thread,0,std::ref(table));
+    th0.join();
+    th1.join();
+    th2.join();
+    th3.join();
+    
     std::sort(table.begin(), table.end());
     return table;
 }
